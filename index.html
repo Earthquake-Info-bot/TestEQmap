@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>地震マップvT1.11.19</title>
+<title>地震マップvT1.11.20</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <style>
 html, body {
@@ -324,6 +324,9 @@ await new Promise(async (resolve, reject) => {
 // ----- ScalePrompt 用の GeoJSON 描画（途中ログ付き） -----
 console.log("ScalePrompt開始: points.length=", points.length);
 
+console.log("処理中ポイント:", p.addr, "| type:", typeof p.addr);
+console.log("coordMap sample:", Object.values(coordMap).slice(0,5).map(c => c.area?.name));
+        
 const areaCodeSet = new Set();
 
 // GeoJSON用の専用paneを作成
