@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>地震マップv1.11.4</title>
+<title>地震マップvT1.11.1</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <style>
 html, body {
@@ -302,69 +302,38 @@ async function loadCoordMap() {
   
 // ==================== 地震情報取得（そのまま）===================
 (async () => {
-  try {
+try {
     const res = await fetch("https://api.p2pquake.net/v2/history?codes=551&limit=5");
     if (!res.ok) throw new Error("地震データが取得できません");
     const data = await res.json();
 
-    for (const eqData of data) {
+    for(const eqData of data){
       const type = eqData.issue?.type;
-
-      // DetailScale か Foreign の場合のみ処理
-      if (type !== "DetailScale" && type !== "Foreign" && type !== "ScalePrompt") continue;
+      if(type !== "DetailScale" && type !== "Foreign") continue;
 
       const points = eqData.points;
 
       await new Promise(async (resolve, reject) => {
         try {
-          // 座標をローカルJSONから取得
+          // ★ 座標をローカルJSONから取得
           const coordMap = await loadCoordMap();
+      
           let latlngs = [];
-
-          if (type === "ScalePrompt") {
-            // ----- ScalePrompt 用の GeoJSON 描画 -----
-            // ここに GeoJSON 読み込み・描画コードを追加
-            // 例: L.geoJSON(geojsonData).addTo(map);
-            console.log("GeoJSON描画処理をここに書く");
-          } else {
-            // ----- 今の震度マーカー描画 -----
-            points.forEach(p => {
-              const latlon = coordMap[p.addr];
-              const intensity = p2pToShindo[p.scale];
-              if (latlon && intensity) {
-                addIntensityMarker(
+          points.forEach(p => {
+            const latlon = coordMap[p.addr];
+            const intensity = p2pToShindo[p.scale];
+            if (latlon && intensity) {
+              addIntensityMarker(
                   latlon.lat,
                   latlon.lon,
                   intensity,
                   `<div style="text-align:center;">
                     ${latlon.pref}${p.addr}${latlon.affi ? `<br>（${latlon.affi}）` : ""}
                   </div>`
-                );
-                latlngs.push([latlon.lat, latlon.lon]);
-              }
-            });
-          }
-
-          // 緯度経度があれば画面に収める
-          if (latlngs.length > 0) {
-            map.fitBounds(L.latLngBounds(latlngs), { padding: [150, 150], maxZoom: 8 });
-          }
-
-          resolve();
-        } catch (e) {
-          reject(e);
-        }
-      });
-
-      break; // 最新の1件だけ表示
-    }
-
-  } catch (error) {
-    const loadingEl = document.getElementById('loading');
-    loadingEl.innerHTML = `<b>エラー</b><br>地震データが取得できません。<br>${error.message}`;
-    console.error(error);
-  }
-})();
+              );
+              latlngs.push([latlon.lat, latlon.lon]);
+            }
+          });
       
           const eq = eqData.earthquake;
           const hypo = eq.hypocenter;
