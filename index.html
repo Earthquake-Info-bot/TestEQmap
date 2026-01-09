@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>地震マップvT1.11.17</title>
+<title>地震マップvT1.11.18</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <style>
 html, body {
@@ -342,8 +342,7 @@ for (const p of points) {
     }
   });
 
-  const entry = Object.values(coordMap).find(c => c.area && c.area.name === p.addr);
-  if (!entry) {
+  const entry = Object.values(coordMap).find(c => c.area && c.area.name.trim() === p.addr.trim());  if (!entry) {
     console.warn("coords.json に該当エリアなし:", p.addr);
     continue;
   }
