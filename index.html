@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>地震マップvT1.11.14</title>
+<title>地震マップvT1.11.15</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <style>
 html, body {
@@ -375,6 +375,7 @@ for (const p of points) {
 }
 
 console.log("ScalePrompt の全GeoJSON描画完了");
+        resolve();
       }else {
       // ----- 通常の震度マーカー描画 -----
       points.forEach(p => {
