@@ -300,20 +300,19 @@ async function loadCoordMap() {
   return map;
 }
 async function loadAreaMap() {
-const res = await fetch('./coords.json');
-if (!res.ok) throw new Error('coords.json が読めません');
-const arr = await res.json();
+  const res = await fetch('./coords.json');
+  if (!res.ok) throw new Error('coords.json が読めません');
+  const arr = await res.json();
 
-const areaMap = {}; // 地方名 → 座標群
-arr.forEach(p => {
-  if (p.area?.name) {
-    if (!areaMap[p.area.name]) areaMap[p.area.name] = {};
-    areaMap[p.area.name].code = p.area.code;
-  }
-});
-});
+  const areaMap = {}; // 地方名 → code
+  arr.forEach(p => {
+    if (p.area?.name) {
+      if (!areaMap[p.area.name]) areaMap[p.area.name] = {};
+      areaMap[p.area.name].code = p.area.code;
+    }
+  });
 
-return areaMap;
+  return areaMap;
 }
   
 // ==================== 地震情報取得（そのまま）===================
