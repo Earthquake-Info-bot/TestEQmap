@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>地震マップvT1.11.16</title>
+<title>地震マップvT1.11.17</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <style>
 html, body {
@@ -324,7 +324,7 @@ await new Promise(async (resolve, reject) => {
 // ----- ScalePrompt 用の GeoJSON 描画（途中ログ付き） -----
 console.log("ScalePrompt開始: points.length=", points.length);
 
-const areaCodeSet = new Set(); // 重複防止用
+const areaCodeSet = new Set();
 
 // GeoJSON用の専用paneを作成
 if (!map.getPane('geojsonPane')) {
@@ -347,15 +347,12 @@ for (const p of points) {
     console.warn("coords.json に該当エリアなし:", p.addr);
     continue;
   }
+
   console.log("coords.jsonで一致:", entry.area.name, "コード:", entry.area.code);
-};
-  } catch (err) {
-    console.error("GeoJSON描画エラー:", err);
-  }
 }
 
 console.log("ScalePrompt の全GeoJSON描画完了");
-        resolve();
+resolve();
       }else {
       // ----- 通常の震度マーカー描画 -----
       points.forEach(p => {
