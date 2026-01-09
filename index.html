@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>地震マップvT1.11.27</title>
+<title>地震マップvT1.12.1</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <style>
 html, body {
@@ -235,7 +235,7 @@ map.getPane('hypocenterPane').style.zIndex = 10000;
 const colors = {"1":"#dcdcdc","2":"#00aaff","3":"#0041ff","4":"#fae696",
                 "5-":"#ffe600","5+":"#ffc800","6-":"#ff2800","6+":"#a50021","7":"#b40068"};
 const textColors = {"1":"#000","2":"#fff","3":"#fff","4":"#000",
-                    "5-":"#000","5+":"#fff","6-":"#fff","6+":"#fff","7":"#fff"};
+                    "5-":"#000","5+":"#000","6-":"#fff","6+":"#fff","7":"#fff"};
 const intensityOrder = {"1":1,"2":2,"3":3,"4":4,"5-":5,"5+":6,"6-":7,"6+":8,"7":9};
 const p2pToShindo = {10:"1",20:"2",30:"3",40:"4",45:"5-",50:"5+",55:"6-",60:"6+",70:"7"};
 
@@ -358,6 +358,12 @@ const colors = {
   "5-":"#ffe600","5+":"#ffc800","6-":"#ff2800","6+":"#a50021","7":"#b40068"
 };
 
+// 震度テキスト色マップ
+const textColors = {
+  "1":"#000","2":"#fff","3":"#fff","4":"#000",
+  "5-":"#000","5+":"#000","6-":"#fff","6+":"#fff","7":"#fff"
+};
+
 // P2P scale → 日本式震度
 const p2pToShindo = {10:"1",20:"2",30:"3",40:"4",45:"5-",50:"5+",55:"6-",60:"6+",70:"7"};
 
@@ -384,6 +390,7 @@ for (const p of points) {
   // 震度を日本式に変換
   const intensity = p2pToShindo[p.scale];
   const fillColor = colors[intensity] || "gray";
+  const textColor = textColors[intensity] || "#000";
 
   try {
     console.log("GeoJSON fetch開始:", areaCode);
@@ -399,6 +406,19 @@ for (const p of points) {
         weight: 2,
         fillColor: fillColor,   // 塗り
         fillOpacity: 0.5
+      },
+      onEachFeature: (feature, layer) => {
+        // ポリゴン中心に震度テキストを置く
+        const center = layer.getBounds().getCenter();
+        L.marker(center, {
+          icon: L.divIcon({
+            className: 'shindo-label',
+            html: `<div style="color:${textColor};font-weight:bold;text-align:center;">${intensity}</div>`,
+            iconSize: [24,24],
+            iconAnchor: [12,12]
+          }),
+          interactive: false
+        }).addTo(map);
       }
     }).addTo(map);
 
