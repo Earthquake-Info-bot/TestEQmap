@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>地震マップvT1.11.11</title>
+<title>地震マップvT1.11.12</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <style>
 html, body {
@@ -338,7 +338,7 @@ await new Promise(async (resolve, reject) => {
                 })
                 .then(geojson => {
                   L.geoJSON(geojson, {
-                    style: { color: 'gray', weight: 2, fillOpacity: 0.2 }
+                    style: { color: 'red', weight: 6, fillOpacity: 0.8 }
                   }).addTo(map);
                 })
                 .catch(err => console.error(err));
