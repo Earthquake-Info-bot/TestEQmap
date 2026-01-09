@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>地震マップvT1.11.23</title>
+<title>地震マップvT1.11.24</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <style>
 html, body {
@@ -307,9 +307,10 @@ const arr = await res.json();
 const areaMap = {}; // 地方名 → 座標群
 arr.forEach(p => {
   if (p.area?.name) {
-    if (!areaMap[p.area.name]) areaMap[p.area.name] = [];
-    areaMap[p.area.name].push({ lat: Number(p.lat), lon: Number(p.lon) });
+    if (!areaMap[p.area.name]) areaMap[p.area.name] = {};
+    areaMap[p.area.name].code = p.area.code;
   }
+});
 });
 
 return areaMap;
