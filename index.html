@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>地震マップvT1.11.18</title>
+<title>地震マップvT1.11.19</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <style>
 html, body {
@@ -333,21 +333,55 @@ if (!map.getPane('geojsonPane')) {
   console.log("geojsonPane作成完了");
 }
 
+// 全角・半角空白やゼロ幅スペースを削除して比較する関数
+const clean = s => s.replace(/[\s\u3000\u200B]/g, "");
+
 for (const p of points) {
   console.log("処理中のポイント:", p.addr);
 
+  // coords.json の area を全部ログ
   Object.values(coordMap).forEach(c => {
     if (c.area) {
       console.log("coords.jsonのarea:", c.area.name);
     }
   });
 
-  const entry = Object.values(coordMap).find(c => c.area && c.area.name.trim() === p.addr.trim());  if (!entry) {
+  const entry = Object.values(coordMap).find(c => c.area && clean(c.area.name) === clean(p.addr));
+  if (!entry) {
     console.warn("coords.json に該当エリアなし:", p.addr);
     continue;
   }
 
   console.log("coords.jsonで一致:", entry.area.name, "コード:", entry.area.code);
+
+  const areaCode = entry.area.code;
+  if (areaCodeSet.has(areaCode)) {
+    console.log("既に描画済み:", areaCode);
+    continue;
+  }
+  areaCodeSet.add(areaCode);
+
+  try {
+    console.log("GeoJSON fetch開始:", areaCode);
+    const res = await fetch(`https://geoshape.ex.nii.ac.jp/jma/resource/AreaForecastLocalE/20240520/${areaCode}.geojson`);
+    if (!res.ok) throw new Error(`${p.addr} のGeoJSON取得失敗`);
+    const geojson = await res.json();
+    console.log("GeoJSON取得成功:", areaCode, "features数:", geojson.features?.length);
+
+    L.geoJSON(geojson, {
+      pane: 'geojsonPane',
+      style: {
+        color: 'gray',
+        weight: 2,
+        fillColor: 'gray',
+        fillOpacity: 0.5
+      }
+    }).addTo(map);
+
+    console.log(`GeoJSON描画完了: ${p.addr} (${areaCode})`);
+  } catch (err) {
+    console.error("GeoJSON描画エラー:", err);
+  }
 }
 
 console.log("ScalePrompt の全GeoJSON描画完了");
