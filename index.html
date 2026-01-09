@@ -352,6 +352,7 @@ for (const p of points) {
         fillOpacity: 0.5    // 塗りの透明度
       }
     }).addTo(map);
+    map.fitBounds(layer.getBounds());
 
     console.log(`GeoJSON描画完了: ${p.addr} (${areaCode})`);
 
