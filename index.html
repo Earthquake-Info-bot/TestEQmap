@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>地震マップvT1.11.24</title>
+<title>地震マップvT1.11.25</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <style>
 html, body {
@@ -304,11 +304,11 @@ async function loadAreaMap() {
   if (!res.ok) throw new Error('coords.json が読めません');
   const arr = await res.json();
 
-  const areaMap = {}; // 地方名 → code
+  const areaMap = {}; // 地方名 → { areaCode }
+
   arr.forEach(p => {
-    if (p.area?.name) {
-      if (!areaMap[p.area.name]) areaMap[p.area.name] = {};
-      areaMap[p.area.name].code = p.area.code;
+    if (p.area?.name && !areaMap[p.area.name]) {
+      areaMap[p.area.name] = { areaCode: p.area.code };
     }
   });
 
@@ -336,7 +336,8 @@ await new Promise(async (resolve, reject) => {
       if (eqData.issue?.type === "ScalePrompt") {
         // ----- ScalePrompt 用の GeoJSON 描画 -----
 // ----- ScalePrompt 用の GeoJSON 描画 -----
-// ----- ScalePrompt 用の GeoJSON 描画（途中ログ付き） -----console.log("ScalePrompt開始: points.length=", points.length);
+// ----- ScalePrompt 用の GeoJSON 描画（途中ログ付き） -----
+console.log("ScalePrompt開始: points.length=", points.length);
 
 // GeoJSON用の専用paneを作成
 if (!map.getPane('geojsonPane')) {
@@ -352,20 +353,20 @@ const areaCodeSet = new Set();
 const clean = s => s.replace(/[\s\u3000\u200B]/g, "");
 
 // ★ ScalePrompt用の地方マップをロード
-const areaMap = await loadAreaMap(); // { "鳥取県西部": [{lat, lon}, ...], ... }
+// loadAreaMap() は { "鳥取県西部": { areaCode: "xxxx" }, ... } の形式
+const areaMap = await loadAreaMap();
 
 for (const p of points) {
   console.log("処理中のポイント:", p.addr);
 
-  // areaMapから座標群を取得
-  const areaCoords = areaMap[p.addr];
-  if (!areaCoords) {
+  // areaMapから地方コードを取得
+  const areaData = areaMap[p.addr];
+  if (!areaData) {
     console.warn("coords.json に該当エリアなし:", p.addr);
     continue;
   }
 
-  // GeoJSON取得用コード（市町村コードではなく地方コード）
-  const areaCode = areaCoords[0].areaCode; // loadAreaMapで areaCode も保持するようにしておく
+  const areaCode = areaData.areaCode; // 地方コードを直接取得
   if (areaCodeSet.has(areaCode)) {
     console.log("既に描画済み:", areaCode);
     continue;
@@ -381,7 +382,12 @@ for (const p of points) {
 
     L.geoJSON(geojson, {
       pane: 'geojsonPane',
-      style: { color: 'gray', weight: 2, fillColor: 'gray', fillOpacity: 0.5 }
+      style: {
+        color: 'gray',
+        weight: 2,
+        fillColor: 'gray',
+        fillOpacity: 0.5
+      }
     }).addTo(map);
 
     console.log(`GeoJSON描画完了: ${p.addr} (${areaCode})`);
