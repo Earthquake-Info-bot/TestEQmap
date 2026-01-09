@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>地震マップvT1.11.25</title>
+<title>地震マップvT1.11.26</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <style>
 html, body {
@@ -352,6 +352,19 @@ const areaCodeSet = new Set();
 // 全角・半角空白やゼロ幅スペースを削除して比較する関数
 const clean = s => s.replace(/[\s\u3000\u200B]/g, "");
 
+// 震度ごとの色マップ
+const colors = {
+  "1":"#dcdcdc",
+  "2":"#00aaff",
+  "3":"#0041ff",
+  "4":"#fae696",
+  "5-":"#ffe600",
+  "5+":"#ffc800",
+  "6-":"#ff2800",
+  "6+":"#a50021",
+  "7":"#b40068"
+};
+
 // ★ ScalePrompt用の地方マップをロード
 // loadAreaMap() は { "鳥取県西部": { areaCode: "xxxx" }, ... } の形式
 const areaMap = await loadAreaMap();
@@ -373,6 +386,9 @@ for (const p of points) {
   }
   areaCodeSet.add(areaCode);
 
+  // 震度に応じた色を取得
+  const fillColor = colors[p.scale] || "gray";
+
   try {
     console.log("GeoJSON fetch開始:", areaCode);
     const res = await fetch(`https://geoshape.ex.nii.ac.jp/jma/resource/AreaForecastLocalE/20240520/${areaCode}.geojson`);
@@ -383,9 +399,9 @@ for (const p of points) {
     L.geoJSON(geojson, {
       pane: 'geojsonPane',
       style: {
-        color: 'gray',
+        color: fillColor,       // 枠線
         weight: 2,
-        fillColor: 'gray',
+        fillColor: fillColor,   // 塗り
         fillOpacity: 0.5
       }
     }).addTo(map);
