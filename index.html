@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>地震マップvT1.11.3</title>
+<title>地震マップvT1.11.10</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <style>
 html, body {
@@ -303,7 +303,7 @@ async function loadCoordMap() {
 // ==================== 地震情報取得（そのまま）===================
 (async () => {
 try {
-    const res = await fetch("https://api.p2pquake.net/v2/history?codes=551&limit=5&offset=66");
+    const res = await fetch("https://api.p2pquake.net/v2/history?codes=551&limit=5");
     if (!res.ok) throw new Error("地震データが取得できません");
     const data = await res.json();
 
@@ -318,12 +318,36 @@ await new Promise(async (resolve, reject) => {
     const coordMap = await loadCoordMap();
     let latlngs = [];
 
-    if (eqData.issue?.type === "ScalePrompt") {
-      // ----- ScalePrompt 用の GeoJSON 描画 -----
-      // ここに GeoJSON 読み込み・描画コードを追加
-      // 例: L.geoJSON(geojsonData).addTo(map);
-      console.log("GeoJSON描画処理をここに書く");
-    } else {
+      if (eqData.issue?.type === "ScalePrompt") {
+        // ----- ScalePrompt 用の GeoJSON 描画 -----
+        const areaCodeSet = new Set(); // 重複防止用
+      
+        points.forEach(p => {
+          // coords.json からエリア情報を探す
+          const entry = Object.values(coordMap).find(c => c.area && c.area.name === p.addr);
+          if (entry) {
+            const areaCode = entry.area.code;
+            if (!areaCodeSet.has(areaCode)) {
+              areaCodeSet.add(areaCode);
+      
+              // GeoJSONを取得して灰色で描画
+              fetch(`https://geoshape.ex.nii.ac.jp/jma/resource/AreaForecastLocalE/20240520/${areaCode}.geojson`)
+                .then(res => {
+                  if (!res.ok) throw new Error(`${p.addr} のGeoJSON取得失敗`);
+                  return res.json();
+                })
+                .then(geojson => {
+                  L.geoJSON(geojson, {
+                    style: { color: 'gray', weight: 2, fillOpacity: 0.2 }
+                  }).addTo(map);
+                })
+                .catch(err => console.error(err));
+            }
+          }
+        });
+      
+        console.log("ScalePrompt の GeoJSON描画完了");
+      } else {
       // ----- 通常の震度マーカー描画 -----
       points.forEach(p => {
         const latlon = coordMap[p.addr];
