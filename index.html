@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>地震マップvT1.11.26</title>
+<title>地震マップvT1.11.27</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <style>
 html, body {
@@ -318,7 +318,7 @@ async function loadAreaMap() {
 // ==================== 地震情報取得（そのまま）===================
 (async () => {
 try {
-    const res = await fetch("https://api.p2pquake.net/v2/history?codes=551&limit=5&offset=67");
+    const res = await fetch("https://api.p2pquake.net/v2/history?codes=551&limit=5&offset=2");
     if (!res.ok) throw new Error("地震データが取得できません");
     const data = await res.json();
 
@@ -354,20 +354,15 @@ const clean = s => s.replace(/[\s\u3000\u200B]/g, "");
 
 // 震度ごとの色マップ
 const colors = {
-  "1":"#dcdcdc",
-  "2":"#00aaff",
-  "3":"#0041ff",
-  "4":"#fae696",
-  "5-":"#ffe600",
-  "5+":"#ffc800",
-  "6-":"#ff2800",
-  "6+":"#a50021",
-  "7":"#b40068"
+  "1":"#dcdcdc","2":"#00aaff","3":"#0041ff","4":"#fae696",
+  "5-":"#ffe600","5+":"#ffc800","6-":"#ff2800","6+":"#a50021","7":"#b40068"
 };
 
+// P2P scale → 日本式震度
+const p2pToShindo = {10:"1",20:"2",30:"3",40:"4",45:"5-",50:"5+",55:"6-",60:"6+",70:"7"};
+
 // ★ ScalePrompt用の地方マップをロード
-// loadAreaMap() は { "鳥取県西部": { areaCode: "xxxx" }, ... } の形式
-const areaMap = await loadAreaMap();
+const areaMap = await loadAreaMap(); // { "鳥取県西部": { areaCode: "xxxx" }, ... }
 
 for (const p of points) {
   console.log("処理中のポイント:", p.addr);
@@ -386,8 +381,9 @@ for (const p of points) {
   }
   areaCodeSet.add(areaCode);
 
-  // 震度に応じた色を取得
-  const fillColor = colors[p.scale] || "gray";
+  // 震度を日本式に変換
+  const intensity = p2pToShindo[p.scale];
+  const fillColor = colors[intensity] || "gray";
 
   try {
     console.log("GeoJSON fetch開始:", areaCode);
@@ -406,7 +402,7 @@ for (const p of points) {
       }
     }).addTo(map);
 
-    console.log(`GeoJSON描画完了: ${p.addr} (${areaCode})`);
+    console.log(`GeoJSON描画完了: ${p.addr} (${areaCode}) 震度=${intensity}`);
   } catch (err) {
     console.error("GeoJSON描画エラー:", err);
   }
