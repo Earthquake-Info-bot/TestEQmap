@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>地震マップvT1.11.13</title>
+<title>地震マップvT1.11.14</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <style>
 html, body {
@@ -321,48 +321,61 @@ await new Promise(async (resolve, reject) => {
       if (eqData.issue?.type === "ScalePrompt") {
         // ----- ScalePrompt 用の GeoJSON 描画 -----
 // ----- ScalePrompt 用の GeoJSON 描画 -----
+// ----- ScalePrompt 用の GeoJSON 描画（途中ログ付き） -----
+console.log("ScalePrompt開始: points.length=", points.length);
+
 const areaCodeSet = new Set(); // 重複防止用
 
-// GeoJSON用の専用paneを作成（マーカーやタイルより上に表示）
+// GeoJSON用の専用paneを作成
 if (!map.getPane('geojsonPane')) {
   map.createPane('geojsonPane');
-  map.getPane('geojsonPane').style.zIndex = 400; // タイルやマーカーより上
+  map.getPane('geojsonPane').style.zIndex = 400;
+  console.log("geojsonPane作成完了");
 }
 
 for (const p of points) {
+  console.log("処理中のポイント:", p.addr);
+
   // coords.json からエリア情報を探す
   const entry = Object.values(coordMap).find(c => c.area && c.area.name === p.addr);
-  if (!entry) continue;
+  if (!entry) {
+    console.warn("coords.json に該当エリアなし:", p.addr);
+    continue;
+  }
+  console.log("coords.jsonで一致:", entry.area.name, "コード:", entry.area.code);
 
   const areaCode = entry.area.code;
-  if (areaCodeSet.has(areaCode)) continue;
+  if (areaCodeSet.has(areaCode)) {
+    console.log("既に描画済み:", areaCode);
+    continue;
+  }
   areaCodeSet.add(areaCode);
 
   try {
+    console.log("GeoJSON fetch開始:", areaCode);
     const res = await fetch(`https://geoshape.ex.nii.ac.jp/jma/resource/AreaForecastLocalE/20240520/${areaCode}.geojson`);
     if (!res.ok) throw new Error(`${p.addr} のGeoJSON取得失敗`);
     const geojson = await res.json();
+    console.log("GeoJSON取得成功:", areaCode, "features数:", geojson.features?.length);
 
     L.geoJSON(geojson, {
       pane: 'geojsonPane',
       style: {
-        color: 'gray',      // 線の色
-        weight: 2,          // 線の太さ
-        fillColor: 'gray',  // 塗りの色
-        fillOpacity: 0.5    // 塗りの透明度
+        color: 'gray',
+        weight: 2,
+        fillColor: 'gray',
+        fillOpacity: 0.5
       }
     }).addTo(map);
-    map.fitBounds(layer.getBounds());
 
     console.log(`GeoJSON描画完了: ${p.addr} (${areaCode})`);
-
   } catch (err) {
-    console.error(err);
+    console.error("GeoJSON描画エラー:", err);
   }
 }
 
 console.log("ScalePrompt の全GeoJSON描画完了");
-      } else {
+      }else {
       // ----- 通常の震度マーカー描画 -----
       points.forEach(p => {
         const latlon = coordMap[p.addr];
