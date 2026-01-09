@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>地震マップv1.12.1</title>
+<title>地震マップv1.11.4</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <style>
 html, body {
@@ -310,19 +310,24 @@ async function loadCoordMap() {
     for (const eqData of data) {
       const type = eqData.issue?.type;
 
-      // ★ 座標をローカルJSONから取得
-      const coordMap = await loadCoordMap();
-      const latlngs = [];
+      // DetailScale か Foreign の場合のみ処理
+      if (type !== "DetailScale" && type !== "Foreign" && type !== "ScalePrompt") continue;
+
+      const points = eqData.points;
 
       await new Promise(async (resolve, reject) => {
         try {
+          // 座標をローカルJSONから取得
+          const coordMap = await loadCoordMap();
+          let latlngs = [];
+
           if (type === "ScalePrompt") {
-            // ---- ここにGeoJSON描画コード ----
+            // ----- ScalePrompt 用の GeoJSON 描画 -----
+            // ここに GeoJSON 読み込み・描画コードを追加
             // 例: L.geoJSON(geojsonData).addTo(map);
-            console.log("ScalePrompt用GeoJSON描画処理をここに書く");
+            console.log("GeoJSON描画処理をここに書く");
           } else {
-            // ---- 今の震度マーカー描画 ----
-            const points = eqData.points;
+            // ----- 今の震度マーカー描画 -----
             points.forEach(p => {
               const latlon = coordMap[p.addr];
               const intensity = p2pToShindo[p.scale];
@@ -340,7 +345,7 @@ async function loadCoordMap() {
             });
           }
 
-          // ---- ここで fitBounds なども可能 ----
+          // 緯度経度があれば画面に収める
           if (latlngs.length > 0) {
             map.fitBounds(L.latLngBounds(latlngs), { padding: [150, 150], maxZoom: 8 });
           }
@@ -350,6 +355,8 @@ async function loadCoordMap() {
           reject(e);
         }
       });
+
+      break; // 最新の1件だけ表示
     }
 
   } catch (error) {
@@ -358,11 +365,6 @@ async function loadCoordMap() {
     console.error(error);
   }
 })();
-
-
-
-
-
       
           const eq = eqData.earthquake;
           const hypo = eq.hypocenter;
@@ -443,7 +445,7 @@ async function loadCoordMap() {
       ${nameText}<br>
       M${magnitudeText}　深さ ${depthText}<br>
       ${tsunami}<br>
-      <span style="font-size:0.8em;font-weight:normal;">NAFY 地震マップv1.12.1</span>
+      <span style="font-size:0.8em;font-weight:normal;">NAFY 地震マップv1.11.4</span>
       `;
       
           // ===== 最大震度 =====
