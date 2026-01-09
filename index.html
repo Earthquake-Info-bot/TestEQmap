@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>地震マップvT1.11.20</title>
+<title>地震マップvT1.11.21</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <style>
 html, body {
@@ -323,9 +323,6 @@ await new Promise(async (resolve, reject) => {
 // ----- ScalePrompt 用の GeoJSON 描画 -----
 // ----- ScalePrompt 用の GeoJSON 描画（途中ログ付き） -----
 console.log("ScalePrompt開始: points.length=", points.length);
-
-console.log("処理中ポイント:", p.addr, "| type:", typeof p.addr);
-console.log("coordMap sample:", Object.values(coordMap).slice(0,5).map(c => c.area?.name));
         
 const areaCodeSet = new Set();
 
@@ -341,6 +338,9 @@ const clean = s => s.replace(/[\s\u3000\u200B]/g, "");
 
 for (const p of points) {
   console.log("処理中のポイント:", p.addr);
+  console.log("処理中ポイント:", p.addr, "| type:", typeof p.addr);
+  console.log("coordMap sample:", Object.values(coordMap).slice(0,5).map(c => c.area?.name));
+
 
   // coords.json の area を全部ログ
   Object.values(coordMap).forEach(c => {
