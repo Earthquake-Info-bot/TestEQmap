@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>地震マップvT1.11.2</title>
+<title>地震マップvT1.11.3</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <style>
 html, body {
@@ -303,7 +303,7 @@ async function loadCoordMap() {
 // ==================== 地震情報取得（そのまま）===================
 (async () => {
 try {
-    const res = await fetch("https://api.p2pquake.net/v2/history?codes=551&limit=5");
+    const res = await fetch("https://api.p2pquake.net/v2/history?codes=551&limit=5&offset=66");
     if (!res.ok) throw new Error("地震データが取得できません");
     const data = await res.json();
 
