@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>地震マップvT1.11.1</title>
+<title>地震マップvT1.11.2</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <style>
 html, body {
@@ -309,32 +309,42 @@ try {
 
     for(const eqData of data){
       const type = eqData.issue?.type;
-      if(type !== "DetailScale" && type !== "Foreign") continue;
 
       const points = eqData.points;
 
-      await new Promise(async (resolve, reject) => {
-        try {
-          // ★ 座標をローカルJSONから取得
-          const coordMap = await loadCoordMap();
+await new Promise(async (resolve, reject) => {
+  try {
+    // ★ 座標をローカルJSONから取得
+    const coordMap = await loadCoordMap();
+    let latlngs = [];
+
+    if (eqData.issue?.type === "ScalePrompt") {
+      // ----- ScalePrompt 用の GeoJSON 描画 -----
+      // ここに GeoJSON 読み込み・描画コードを追加
+      // 例: L.geoJSON(geojsonData).addTo(map);
+      console.log("GeoJSON描画処理をここに書く");
+    } else {
+      // ----- 通常の震度マーカー描画 -----
+      points.forEach(p => {
+        const latlon = coordMap[p.addr];
+        const intensity = p2pToShindo[p.scale];
+        if (latlon && intensity) {
+          addIntensityMarker(
+            latlon.lat,
+            latlon.lon,
+            intensity,
+            `<div style="text-align:center;">
+              ${latlon.pref}${p.addr}${latlon.affi ? `<br>（${latlon.affi}）` : ""}
+            </div>`
+          );
+          latlngs.push([latlon.lat, latlon.lon]);
+        }
+      });
+    
+}
       
-          let latlngs = [];
-          points.forEach(p => {
-            const latlon = coordMap[p.addr];
-            const intensity = p2pToShindo[p.scale];
-            if (latlon && intensity) {
-              addIntensityMarker(
-                  latlon.lat,
-                  latlon.lon,
-                  intensity,
-                  `<div style="text-align:center;">
-                    ${latlon.pref}${p.addr}${latlon.affi ? `<br>（${latlon.affi}）` : ""}
-                  </div>`
-              );
-              latlngs.push([latlon.lat, latlon.lon]);
-            }
-          });
-      
+
+
           const eq = eqData.earthquake;
           const hypo = eq.hypocenter;
       
